@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User
+from models import db, User, Character, Planet, Favorite
 #from models import Person
 
 app = Flask(__name__)
@@ -44,6 +44,139 @@ def handle_hello():
     }
 
     return jsonify(response_body), 200
+
+@app.route('/user', methods=['GET'])
+def get_all_users():
+    
+    users = User.query.all()
+    users = list(map(lambda user: user.to_dict(), users))
+
+    return jsonify({
+        "data": users
+    }), 200
+
+@app.route('/user', methods=['POST'])
+def create_user():
+
+    user = User()
+    data = request.get_json()
+    user.name = data["name"]
+    user.username = data["username"]
+    user.password = data["password"]
+
+    db.session.add(user)
+    db.session.commit()
+
+    return jsonify({
+        "msg": "user created"
+    }), 200
+
+@app.route('/user', methods=['GET','PUT','DELETE'])
+def handle_user():
+
+    if request.method == 'GET':
+        user_id = id
+        user = User.query.get(id)
+        data = user.to_dict()
+
+        return data, 200
+    elif request.method == 'PUT':
+        user = User.query.get(id)
+        if user is not None:
+            data = request.get_json()
+            user.username = data["username"]
+            db.session.commit()
+            return jsonify({
+                "msg":"user updated"
+            }),200
+        else:
+            return jsonify({
+                "msg": "user not found"
+            }), 404
+    elif request.method == 'DELETE':
+        user = User.query.get(id)
+        if user is not None:
+            db.session.delete(user)
+            db.session.commit()
+
+            return jsonify({
+                "msg":"user deleted"
+            }),202
+        else:
+            return jsonify({
+                "msg":"user not found"
+            }), 404
+        
+    
+
+
+@app.route('/character', methods=['GET'])
+def get_all_characters():
+    if request.method == 'GET':
+        characters = Character.query.all()
+        characters = list(map(lambda character: character.to_dict(), characters))
+
+        return jsonify({
+            "data": characters
+        }), 200
+
+@app.route('/character', methods=['GET'])
+def get_single_characters():
+     if request.method == 'GET':
+        
+        character = Character.query.get(id)
+        data = character.to_dict()
+
+        return data, 200
+    
+@app.route('/character', methods=['GET'])
+def create_character():
+
+    if request.method == 'POST':
+        character = Character()
+        data = request.get_json()
+        character.name = data["name"]
+
+        db.session.add(character)
+        db.session.commit()
+
+        return jsonify({
+            "msg": "character created"
+        }), 200
+
+@app.route('/character', methods=['GET'])
+def get_all_characters():
+    if request.method == 'GET':
+        characters = Character.query.all()
+        characters = list(map(lambda character: character.to_dict(), characters))
+
+        return jsonify({
+            "data": characters
+        }), 200
+
+@app.route('/character', methods=['GET'])
+def get_single_characters():
+     if request.method == 'GET':
+        
+        character = Character.query.get(id)
+        data = character.to_dict()
+
+        return data, 200
+    
+@app.route('/character', methods=['GET'])
+def create_character():
+
+    if request.method == 'POST':
+        character = Character()
+        data = request.get_json()
+        character.name = data["name"]
+
+        db.session.add(character)
+        db.session.commit()
+
+        return jsonify({
+            "msg": "character created"
+        }), 200
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
