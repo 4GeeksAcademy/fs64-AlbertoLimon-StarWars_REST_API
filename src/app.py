@@ -112,20 +112,16 @@ def handle_user(id):
     
 
 
-@app.route('/character/<int:id>', methods=['GET','PUT','DELETE'])
-def get_all_characters():
-    if request.method == 'GET':
-        characters = Character.query.all()
-        characters = list(map(lambda character: character.to_dict(), characters))
-
-        return jsonify({
-            "data": characters
-        }), 200
-    
 @app.route('/character', methods=['GET'])
+def get_all_characters():
+   
+        characters = Character.query.all()
+        return jsonify([character.name for character in characters]), 200
+    
+@app.route('/character', methods=['POST'])
 def create_character():
 
-    if request.method == 'POST':
+    
         character = Character()
         data = request.get_json()
         character.name = data["name"]
@@ -137,14 +133,14 @@ def create_character():
             "msg": "character created"
         }), 200
 
-@app.route('/character/<int:id>', methods=['GET'])
+@app.route('/character/<int:id>', methods=['GET','PUT','DELETE'])
 def handle_character(id):
     if request.method == 'GET':
         
         character = Character.query.get(id)
-        data = character.to_dict()
+        
 
-        return data, 200
+        return jsonify(character.serialize()), 200
     
     elif request.method == 'PUT':
         character = Character.query.get(id)
@@ -188,22 +184,26 @@ def get_all_planets():
 
 @app.route('/planet', methods=['GET'])
 def create_planet():
-     if request.method == 'GET':
-        
-        planet = Planet.query.get(id)
-        data = planet.to_dict()
+     if request.method == 'POST':
+        planet = Planet()
+        data = request.get_json()
+        planet.name = data["name"]
 
-        return data, 200
+        db.session.add(planet)
+        db.session.commit()
+
+        return jsonify({
+            "msg": "planet created"
+        }), 200
     
 @app.route("/planet/<int:id>", methods=['GET', 'PUT', 'DELETE'])
 def handle_planet(id):
 
-    if request.method == 'PUT':
+    if request.method == 'GET':
        
         planet = Planet.query.get(id)
-        data = planet.to_dict()
-
-        return data, 200
+        
+        return jsonify(planet.serialize()), 200
 
     elif request.method == 'PUT':
         planet = Planet.query.get(id)
