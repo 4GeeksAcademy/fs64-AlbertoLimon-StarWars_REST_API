@@ -71,15 +71,16 @@ def create_user():
         "msg": "user created"
     }), 200
 
-@app.route('/user', methods=['GET','PUT','DELETE'])
-def handle_user():
+@app.route('/user/<int:id>', methods=['GET','PUT','DELETE'])
+def handle_user(id):
 
     if request.method == 'GET':
-        user_id = id
+    
         user = User.query.get(id)
         data = user.to_dict()
 
         return data, 200
+    
     elif request.method == 'PUT':
         user = User.query.get(id)
         if user is not None:
@@ -93,6 +94,7 @@ def handle_user():
             return jsonify({
                 "msg": "user not found"
             }), 404
+        
     elif request.method == 'DELETE':
         user = User.query.get(id)
         if user is not None:
@@ -110,7 +112,7 @@ def handle_user():
     
 
 
-@app.route('/character', methods=['GET'])
+@app.route('/character/<int:id>', methods=['GET','PUT','DELETE'])
 def get_all_characters():
     if request.method == 'GET':
         characters = Character.query.all()
@@ -119,15 +121,6 @@ def get_all_characters():
         return jsonify({
             "data": characters
         }), 200
-
-@app.route('/character', methods=['GET'])
-def get_single_characters():
-     if request.method == 'GET':
-        
-        character = Character.query.get(id)
-        data = character.to_dict()
-
-        return data, 200
     
 @app.route('/character', methods=['GET'])
 def create_character():
@@ -144,39 +137,156 @@ def create_character():
             "msg": "character created"
         }), 200
 
-@app.route('/character', methods=['GET'])
-def get_all_characters():
+@app.route('/character/<int:id>', methods=['GET'])
+def handle_character(id):
     if request.method == 'GET':
-        characters = Character.query.all()
-        characters = list(map(lambda character: character.to_dict(), characters))
-
-        return jsonify({
-            "data": characters
-        }), 200
-
-@app.route('/character', methods=['GET'])
-def get_single_characters():
-     if request.method == 'GET':
         
         character = Character.query.get(id)
         data = character.to_dict()
 
         return data, 200
     
-@app.route('/character', methods=['GET'])
-def create_character():
+    elif request.method == 'PUT':
+        character = Character.query.get(id)
+        if character is not None:
+            data = request.get_json()
+            character.name = data["name"]
+            db.session.commit()
+            return jsonify({
+                "msg":"character updated"
+            }),200
+        else:
+            return jsonify({
+                "msg": "character not found"
+            }), 404
+        
+    elif request.method == 'DELETE':
+        character = Character.query.get(id)
+        if character is not None:
+            db.session.delete(character)
+            db.session.commit()
 
-    if request.method == 'POST':
-        character = Character()
-        data = request.get_json()
-        character.name = data["name"]
+            return jsonify({
+                "msg":"character deleted"
+            }),202
+        else:
+            return jsonify({
+                "msg":"character not found"
+            }), 404
+    
+    
 
-        db.session.add(character)
+@app.route('/planet', methods=['GET'])
+def get_all_planets():
+    if request.method == 'GET':
+        planets = Planet.query.all()
+        planets = list(map(lambda planet: planet.to_dict(), planets))
+
+        return jsonify({
+            "data": planets
+        }), 200
+
+@app.route('/planet', methods=['GET'])
+def create_planet():
+     if request.method == 'GET':
+        
+        planet = Planet.query.get(id)
+        data = planet.to_dict()
+
+        return data, 200
+    
+@app.route("/planet/<int:id>", methods=['GET', 'PUT', 'DELETE'])
+def handle_planet(id):
+
+    if request.method == 'PUT':
+       
+        planet = Planet.query.get(id)
+        data = planet.to_dict()
+
+        return data, 200
+
+    elif request.method == 'PUT':
+        planet = Planet.query.get(id)
+        if planet is not None:
+            data = request.get_json()
+            planet.name = data["name"]
+            db.session.commit()
+            return jsonify({
+                "msg":"planet updated"
+            }),200
+        else:
+            return jsonify({
+                "msg": "planet not found"
+            }), 404
+        
+    elif request.method == 'DELETE':
+        planet = Planet.query.get(id)
+        if planet is not None:
+            db.session.delete(planet)
+            db.session.commit()
+
+            return jsonify({
+                "msg":"planet deleted"
+            }),202
+        else:
+            return jsonify({
+                "msg":"planet not found"
+            }), 404
+
+
+@app.route('/user/<int:id>/favorite', methods=['GET'])
+def handle_favorite(id):
+    user_id = id
+    favorites = Favorite.query.filter_by(user_id=user_id)
+    favorites = list(map(lambda favorite: favorite.to_dict(), favorites))
+
+    return jsonify({
+        "data": favorites
+    }), 200
+
+@app.route('/favorite', methods=['POST'])
+def create_favorite():
+    
+    favorite = Favorite()
+    data = request.get_json()
+    user_id = data["user_id"]
+
+    if data["character_id"] is None:
+        character_id = "0"
+    character_id = data["character_id"]
+    if data["planet_id"] is None:
+        planet_id = "0"
+    planet_id = data["planet_id"]
+    
+    user_filter = User.query.filter_by(id=user_id)
+    character_filter = Character.query.filter_by(id=character_id)
+    planet_filter = Planet.query.filter_by(id=planet_id)
+
+    if user_filter is not None and character_filter is not None:
+        favorite.user_id = data["user_id"]
+        favorite.user_character = data["character_id"]
+        db.session.add(favorite)
         db.session.commit()
 
         return jsonify({
-            "msg": "character created"
+        "msg": "favorite created"
         }), 200
+
+    elif user_filter is not None and planet_filter is not None:
+        favorite.user_id = data["user_id"]
+        favorite.user_planet = data["planet_id"]
+        db.session.add(favorite)
+        db.session.commit()
+
+        return jsonify({
+        "msg": "favorite created"
+        }), 200
+
+    else:
+        return jsonify({
+                "msg":"favorite could not be create, make sure user, character or planet exists"
+            }), 404
+
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
