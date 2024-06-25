@@ -35,7 +35,7 @@ def handle_invalid_usage(error):
 @app.route('/')
 def sitemap():
     return generate_sitemap(app)
-
+"""
 @app.route('/user', methods=['GET'])
 def handle_hello():
 
@@ -44,16 +44,14 @@ def handle_hello():
     }
 
     return jsonify(response_body), 200
+"""
 
 @app.route('/user', methods=['GET'])
 def get_all_users():
     
     users = User.query.all()
-    users = list(map(lambda user: user.to_dict(), users))
-
-    return jsonify({
-        "data": users
-    }), 200
+    data = jsonify([user.name for user in users])
+    return data, 200
 
 @app.route('/user', methods=['POST'])
 def create_user():
@@ -62,7 +60,7 @@ def create_user():
     data = request.get_json()
     user.name = data["name"]
     user.username = data["username"]
-    user.password = data["password"]
+    user.email = data["email"]
 
     db.session.add(user)
     db.session.commit()
@@ -77,16 +75,19 @@ def handle_user(id):
     if request.method == 'GET':
     
         user = User.query.get(id)
-        data = user.to_dict()
-
+        data = jsonify(user.serialize())
         return data, 200
     
     elif request.method == 'PUT':
         user = User.query.get(id)
         if user is not None:
+
             data = request.get_json()
+            user.name = data["name"]
             user.username = data["username"]
+            user.email = data["email"]
             db.session.commit()
+
             return jsonify({
                 "msg":"user updated"
             }),200
@@ -115,39 +116,44 @@ def handle_user(id):
 @app.route('/character', methods=['GET'])
 def get_all_characters():
    
-        characters = Character.query.all()
-        return jsonify([character.name for character in characters]), 200
+    characters = Character.query.all()
+    data = jsonify([character.name for character in characters])
+    return data, 200
     
 @app.route('/character', methods=['POST'])
 def create_character():
 
-    
-        character = Character()
-        data = request.get_json()
-        character.name = data["name"]
+    character = Character()
+    data = request.get_json()
+    character.name = data["name"]
+    character.height = data["height"]
+    character.weight = data["weight"]
 
-        db.session.add(character)
-        db.session.commit()
+    db.session.add(character)
+    db.session.commit()
 
-        return jsonify({
-            "msg": "character created"
-        }), 200
+    return jsonify({
+        "msg": "character created"
+    }), 200
 
 @app.route('/character/<int:id>', methods=['GET','PUT','DELETE'])
 def handle_character(id):
     if request.method == 'GET':
         
         character = Character.query.get(id)
-        
-
-        return jsonify(character.serialize()), 200
+        data = jsonify(character.serialize())
+        return data, 200
     
     elif request.method == 'PUT':
         character = Character.query.get(id)
         if character is not None:
+
             data = request.get_json()
             character.name = data["name"]
+            character.height = data["height"]
+            character.weight = data["weight"]
             db.session.commit()
+
             return jsonify({
                 "msg":"character updated"
             }),200
@@ -175,26 +181,26 @@ def handle_character(id):
 @app.route('/planet', methods=['GET'])
 def get_all_planets():
     if request.method == 'GET':
+
         planets = Planet.query.all()
-        planets = list(map(lambda planet: planet.to_dict(), planets))
+        data = jsonify([planet.name for planet in planets])
+        return data, 200
 
-        return jsonify({
-            "data": planets
-        }), 200
-
-@app.route('/planet', methods=['GET'])
+@app.route('/planet', methods=['POST'])
 def create_planet():
-     if request.method == 'POST':
-        planet = Planet()
-        data = request.get_json()
-        planet.name = data["name"]
 
-        db.session.add(planet)
-        db.session.commit()
+    planet = Planet()
+    data = request.get_json()
+    planet.name = data["name"]
+    planet.diameter = data["diameter"]
+    planet.population = data["population"]
 
-        return jsonify({
-            "msg": "planet created"
-        }), 200
+    db.session.add(planet)
+    db.session.commit()
+
+    return jsonify({
+        "msg": "planet created"
+    }), 200
     
 @app.route("/planet/<int:id>", methods=['GET', 'PUT', 'DELETE'])
 def handle_planet(id):
@@ -202,15 +208,19 @@ def handle_planet(id):
     if request.method == 'GET':
        
         planet = Planet.query.get(id)
-        
-        return jsonify(planet.serialize()), 200
+        data = jsonify(planet.serialize())
+        return data, 200
 
     elif request.method == 'PUT':
         planet = Planet.query.get(id)
         if planet is not None:
+
             data = request.get_json()
             planet.name = data["name"]
+            planet.diameter = data["diameter"]
+            planet.population = data["population"]
             db.session.commit()
+
             return jsonify({
                 "msg":"planet updated"
             }),200

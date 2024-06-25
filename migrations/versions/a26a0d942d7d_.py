@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 9d57a0ded6d6
+Revision ID: a26a0d942d7d
 Revises: 
-Create Date: 2024-06-24 18:28:14.289867
+Create Date: 2024-06-25 18:11:40.567811
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '9d57a0ded6d6'
+revision = 'a26a0d942d7d'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -21,18 +21,24 @@ def upgrade():
     op.create_table('characters',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=250), nullable=False),
+    sa.Column('height', sa.Float(), nullable=True),
+    sa.Column('weight', sa.Integer(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('planets',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=250), nullable=False),
+    sa.Column('diameter', sa.Integer(), nullable=True),
+    sa.Column('population', sa.BigInteger(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('users',
     sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('name', sa.String(length=120), nullable=False),
     sa.Column('username', sa.String(length=120), nullable=False),
     sa.Column('email', sa.String(length=120), nullable=False),
     sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('name'),
     sa.UniqueConstraint('username')
     )
     op.create_table('favorites',
