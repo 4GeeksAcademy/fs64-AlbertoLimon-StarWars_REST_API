@@ -246,14 +246,15 @@ def handle_planet(id):
 
 @app.route('/user/<int:id>/favorite', methods=['GET'])
 def handle_favorite(id):
+    
     user_id = id
     favorites = Favorite.query.filter_by(user_id=user_id)
-    data = jsonify({[favorite.user_id for favorite in favorites],
-                    [favorite.user_character for favorite in favorites],
-                    [favorite.user_planet for favorite in favorites]
-                    })
+    data = jsonify(favorites.serialize())
 
+    
+    #favorites = list(map(lambda favorite: favorite.list(), favorites))
     return data, 200
+
 
 @app.route('/favorite', methods=['POST'])
 def create_favorite():
@@ -273,14 +274,26 @@ def create_favorite():
     character_filter = Character.query.filter_by(id=character_id)
     planet_filter = Planet.query.filter_by(id=planet_id)
 
-    if user_filter is not None and character_filter is not None:
+    if user_filter is not None and character_filter is not None and planet_filter is not None:
+
+        favorite.user_id = data["user_id"]
+        favorite.user_character = data["character_id"]
+        favorite.user_planet = data["planet_id"]
+        db.session.add(favorite)
+        db.session.commit()
+
+        return jsonify({
+        "msg": "favorite created with planets and characters"
+        }), 200
+
+    elif user_filter is not None and character_filter is not None:
         favorite.user_id = data["user_id"]
         favorite.user_character = data["character_id"]
         db.session.add(favorite)
         db.session.commit()
 
         return jsonify({
-        "msg": "favorite created"
+        "msg": "favorite created with characters"
         }), 200
 
     elif user_filter is not None and planet_filter is not None:
@@ -290,7 +303,7 @@ def create_favorite():
         db.session.commit()
 
         return jsonify({
-        "msg": "favorite created"
+        "msg": "favorite created with planets"
         }), 200
 
     else:
