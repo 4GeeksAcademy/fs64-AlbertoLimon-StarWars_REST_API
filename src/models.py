@@ -63,6 +63,8 @@ class Favorite(db.Model):
     user_character = db.Column(db.Integer, db.ForeignKey('characters.id'))
     user_planet = db.Column(db.Integer, db.ForeignKey('planets.id'))
     user = db.relationship(User)
+    character = db.relationship(Character)
+    planet = db.relationship(Planet)
 
     def __repr__(self):
         return '{}'.format(self.id)

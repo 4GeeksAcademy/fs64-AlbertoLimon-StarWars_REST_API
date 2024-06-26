@@ -248,11 +248,12 @@ def handle_planet(id):
 def handle_favorite(id):
     user_id = id
     favorites = Favorite.query.filter_by(user_id=user_id)
-    favorites = list(map(lambda favorite: favorite.to_dict(), favorites))
+    data = jsonify({[favorite.user_id for favorite in favorites],
+                    [favorite.user_character for favorite in favorites],
+                    [favorite.user_planet for favorite in favorites]
+                    })
 
-    return jsonify({
-        "data": favorites
-    }), 200
+    return data, 200
 
 @app.route('/favorite', methods=['POST'])
 def create_favorite():
