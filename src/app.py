@@ -249,11 +249,9 @@ def handle_favorite(id):
     
     user_id = id
     favorites = Favorite.query.filter_by(user_id=user_id)
-    data = jsonify(favorites.serialize())
+    data = [favorite.serialize() for favorite in favorites]
 
-    
-    #favorites = list(map(lambda favorite: favorite.list(), favorites))
-    return data, 200
+    return jsonify(data), 200
 
 
 @app.route('/favorite', methods=['POST'])
